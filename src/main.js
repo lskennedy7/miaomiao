@@ -4,6 +4,8 @@ import router from './router'
 import store from './store'
 
 Vue.config.productionTip = false
+// 用于chrome调试时，显示vue标签栏
+Vue.config.devtools = true
 
 new Vue({
   router,
