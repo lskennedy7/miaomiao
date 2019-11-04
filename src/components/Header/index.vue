@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'header',
+  name: 'Header',
   props: {
     title: {
       type: String,
@@ -21,8 +21,8 @@ export default {
   width: 100%;
   height: 50px;
   color: #fff;
-  background: #e54847;
-  border-bottom: 1px solid #e54847;
+  background: #b3336f;
+  border-bottom: 1px solid #b3336f;
   position: relative;
 }
 #header h1 {
