@@ -1,7 +1,12 @@
 <template>
-  <div class="movie_body">
-    <ul>
-      <!-- <li>
+  <div class="movie_body"
+       ref="movie_body">
+    <Loading v-if="isLoading" />
+    <Scroller v-else
+              :handleToScroll="handleToScroll"
+              :handleToTouchEnd="handleToTouchEnd">
+      <ul>
+        <!-- <li>
         <div class="pic_show"><img src="/images/movie_1.jpg"></div>
         <div class="info_list">
           <h2>无名之辈</h2>
@@ -13,41 +18,112 @@
           购票
         </div>
       </li> -->
-      <li v-for="item in movieList"
-          :key="item.id">
-        <div class="pic_show"><img :src="item.img | setWH('120.180')"></div>
-        <div class="info_list">
-          <h2>{{item.nm}} <img v-if="item.version"
-                 src="@/assets/maxs.png"
-                 alt=""></h2>
-          <p>观众评 <span class="grade">{{item.sc}}</span></p>
-          <p>主演: {{item.star}}</p>
-          <p>{{item.showInfo}}</p>
-        </div>
-        <div class="btn_mall">
-          购票
-        </div>
-      </li>
-    </ul>
+        <li class="pullDown">{{pullDownMsg}}</li>
+        <li v-for="item in movieList"
+            :key="item.id">
+          <div class="pic_show"
+               @tap="handleToDetail"><img :src="item.img | setWH('120.180')"></div>
+          <div class="info_list">
+            <h2>{{item.nm}} <img v-if="item.version"
+                   src="@/assets/maxs.png"
+                   alt=""></h2>
+            <p>观众评 <span class="grade">{{item.sc}}</span></p>
+            <p>主演: {{item.star}}</p>
+            <p>{{item.showInfo}}</p>
+          </div>
+          <div class="btn_mall">
+            购票
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
 <script>
+
+// import BScroll from "better-scroll"
+
 export default {
   name: 'NowPlaying',
   data () {
     return {
-      movieList: []
+      movieList: [],
+      pullDownMsg: '',
+      isLoading: true,
+      // 上一次的城市id
+      prevCityId: -1
     }
   },
-  mounted () {
-    this.axios.get('/api/movieOnInfoList?cityId=10').then((res) => {
+  activated () {
+    var cityId = this.$store.state.city.id
+
+    if (this.prevCityId === cityId) {
+      return
+    }
+
+    this.isLoading = true
+    // console.log(123)
+    this.axios.get('/api/movieOnInfoList?cityId=' + cityId).then((res) => {
       var msg = res.data.msg
       if (msg === 'ok') {
         this.movieList = res.data.data.movieList
-        console.log(this.movieList)
+        this.isLoading = false
+        this.prevCityId = cityId
+        // 保证页面数据已经渲染后，再调用new BScrool()
+        // this.$nextTick(() => {
+        //   // probeType出发scroll 截流
+        //   var scroll = new BScroll(this.$refs.movie_body, { tap: true, probeType: 1 })
+        //   scroll.on('scroll', (pos) => {
+        //     // console.log('scroll')
+        //     if (pos.y > 30) {
+        //       this.pullDownMsg = '正在更新中'
+        //     }
+        //   })
+
+        //   scroll.on('touchEnd', (pos) => {
+        //     // console.log('touchEnd')
+        //     if (pos.y > 30) {
+        //       this.axios.get('/api/movieOnInfoList?cityId=11').then((res) => {
+        //         var msg = res.data.msg
+        //         if (msg === 'ok') {
+        //           this.pullDownMsg = '更新成功'
+        //           setTimeout(() => {
+        //             this.movieList = res.data.data.movieList
+        //             this.pullDownMsg = ''
+        //           }, 1000)
+        //         }
+        //       })
+        //     }
+        //   })
+        // })
+        // console.log(this.movieList)
       }
     })
+  },
+  methods: {
+    handleToDetail () {
+      console.log('handleToDetail')
+    },
+    handleToScroll (pos) {
+      if (pos.y > 30) {
+        this.pullDownMsg = '正在更新中'
+      }
+    },
+    handleToTouchEnd (pos) {
+      if (pos.y > 30) {
+        this.axios.get('/api/movieOnInfoList?cityId=11').then((res) => {
+          var msg = res.data.msg
+          if (msg === 'ok') {
+            this.pullDownMsg = '更新成功'
+            setTimeout(() => {
+              this.movieList = res.data.data.movieList
+              this.pullDownMsg = ''
+            }, 1000)
+          }
+        })
+      }
+    }
   }
 }
 </script>
@@ -60,7 +136,7 @@ export default {
 .movie_body ul {
   margin: 0 12px;
   overflow: hidden;
-  margin-bottom: 50px;
+  padding-bottom: 50px;
 }
 .movie_body ul li {
   margin-top: 12px;
@@ -115,7 +191,7 @@ export default {
   height: 27px;
   line-height: 28px;
   text-align: center;
-  background-color: #f03d37;
+  background-color: #b3336f;
   color: #fff;
   border-radius: 4px;
   font-size: 12px;
@@ -123,5 +199,11 @@ export default {
 }
 .movie_body .btn_pre {
   background-color: #3c9fe6;
+}
+
+.movie_body .pullDown {
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 </style>
